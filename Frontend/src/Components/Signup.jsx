@@ -31,6 +31,19 @@ export function Signup() {
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
         <h2 className="text-2xl font-bold text-center text-gray-700">Sign Up</h2>
         <form className="mt-6" onSubmit={handleSubmit}>
+
+
+        <input
+            type="text"
+            name="fullname"
+            placeholder="Full Name"
+            value={formData.username}
+            onChange={handleChange}
+            className="w-full p-3 mb-4 border rounded-xl focus:ring focus:ring-indigo-300"
+            required
+          />
+
+
           <input
             type="text"
             name="username"
