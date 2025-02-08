@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import React from "react";
+import { Store } from "react-notifications-component";
+import "react-notifications-component/dist/theme.css";
+import "animate.css";
 
-export function Signup() {
-  const navigate = useNavigate(); // Initialize navigation
+ function Signup() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
+    fullname: "",
     username: "",
     email: "",
     password: "",
@@ -21,9 +25,25 @@ export function Signup() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
-    // Simulate successful signup and navigate to login page
-    navigate("/login");
+    
+    // Show notification
+    Store.addNotification({
+      title: "Success!",
+      message: "User signed up successfully!",
+      type: "success",  // Can be 'success', 'danger', 'info', 'default'
+      insert: "top",
+      container: "top-right",
+      animationIn: ["animate__animated", "animate__fadeIn"],
+      animationOut: ["animate__animated", "animate__fadeOut"],
+      dismiss: {
+        duration: 500, // Auto close after 3 seconds
+        onScreen: true,
+      },
+    });
+
+    setTimeout(() => {
+      navigate("/login"); // Redirect after showing notification
+    }, 500);
   };
 
   return (
@@ -31,6 +51,17 @@ export function Signup() {
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
         <h2 className="text-2xl font-bold text-center text-gray-700">Sign Up</h2>
         <form className="mt-6" onSubmit={handleSubmit}>
+
+          <input
+            type="text"
+            name="fullname"
+            placeholder="Full Name"
+            value={formData.fullname}
+            onChange={handleChange}
+            className="w-full p-3 mb-4 border rounded-xl focus:ring focus:ring-indigo-300"
+            required
+          />
+
           <input
             type="text"
             name="username"
@@ -82,3 +113,4 @@ export function Signup() {
     </div>
   );
 }
+export default Signup;
