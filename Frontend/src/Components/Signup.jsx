@@ -37,7 +37,7 @@ export function Signup() {
             type="text"
             name="fullname"
             placeholder="Full Name"
-            value={formData.username}
+            value={formData.fullname}
             onChange={handleChange}
             className="w-full p-3 mb-4 border rounded-xl focus:ring focus:ring-indigo-300"
             required
