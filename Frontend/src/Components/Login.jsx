@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import React from "react";
+import { Store } from "react-notifications-component";
 
-export function Login() {
-  const navigate = useNavigate(); // Initialize navigation
+import "react-notifications-component/dist/theme.css";
+
+function Login() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
 
   const handleChange = (e) => {
@@ -14,8 +17,25 @@ export function Login() {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(formData);
-    // Simulate successful login and navigate to Navbar page
-    navigate("/navbar");
+
+    Store.addNotification({
+      title: "Login Successful!",
+      message: "You have successfully logged in.",
+      type: "success",
+      insert: "top",
+      container: "top-right",
+      animationIn: ["animate__animated", "animate__fadeIn"],
+      animationOut: ["animate__animated", "animate__fadeOut"],
+      dismiss: {
+        duration: 500,
+        onScreen: true,
+      },
+    });
+    
+
+    setTimeout(() => {
+      navigate("/navbar");
+    }, 500);
   };
 
   return (
@@ -52,3 +72,6 @@ export function Login() {
     </div>
   );
 }
+
+export default Login; // ✅ Correct default export at the bottom
+
