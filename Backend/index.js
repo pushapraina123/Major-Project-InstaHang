@@ -3,7 +3,7 @@ const app=express();
 const route=require("./routes/user")
 const mongoose=require("mongoose");
 const cors=require("cors");
-const port=8000;
+const port=8500;
 
 mongoose.connect("mongodb://localhost:27017/InstaHang_Users").then(()=>{
     console.log("Database Connected");
