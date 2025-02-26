@@ -1,7 +1,7 @@
 const user = require("../models/user");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
-
+const jwt = require("jsonwebtoken");
 
 const transporter = nodemailer.createTransport({
     service: 'gmail', 
@@ -64,20 +64,77 @@ async function createUser(req, res) {
     }
 }
 
+// controllers/user.js - Updated AuthenticateUser function
+// Add this at the top of your user.js controller
+
 async function AuthenticateUser(req, res) {
-    const {email, password} = req.body;
+    const {email, password, latitude, longitude} = req.body;
+    
     if (!email || !password)
         return res.status(400).json({error: "All fields are required"});
+    
     try {
         const User = await user.matchPassword(email, password);
         console.log("Authenticated user:", User);
-        return res.status(200).json({message: "User Logged In Successfully"});
+        
+        // Check if User has the _id property directly
+        let userId;
+        if (User._id) {
+            userId = User._id.toString();
+        } else if (User._doc && User._doc._id) {
+            // If User is a mongoose document, _id might be in _doc
+            userId = User._doc._id.toString();
+        } else {
+            // If neither, log the full user object for debugging
+            console.error("User object structure:", JSON.stringify(User, null, 2));
+            return res.status(500).json({error: "Could not extract user ID"});
+        }
+        
+        console.log("Extracted userId for token:", userId);
+        
+        // Create JWT token with userId
+        const token = jwt.sign(
+            { userId: userId },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+        
+        // If location data is provided, update location
+        if (latitude && longitude) {
+            try {
+                const UserLocation = require("../models/userlocation");
+                await UserLocation.findOneAndUpdate(
+                    { userId: userId },
+                    { 
+                        userId: userId,
+                        latitude, 
+                        longitude,
+                        lastUpdated: Date.now() 
+                    },
+                    { upsert: true }
+                );
+            } catch (locErr) {
+                console.error("Location update error:", locErr);
+                // Continue anyway, location update is not critical
+            }
+        }
+        
+        // Return success with token
+        return res.status(200).json({
+            message: "User Logged In Successfully",
+            token,
+            user: {
+                id: userId,
+                name: User.name || (User._doc ? User._doc.name : null),
+                UserName: User.UserName || (User._doc ? User._doc.UserName : null), 
+                email: User.email || (User._doc ? User._doc.email : null)
+            }
+        });
     } catch (error) {
         console.error("Error during login:", error.message);
         return res.status(401).json({error: error.message});
     }
 }
-
 async function verifyEmail(req, res) {
     try {
         const { token } = req.params;

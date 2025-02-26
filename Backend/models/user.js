@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
     },
     email: {
         type: String,
-        require: true,
+        required: true,
         unique: true,
     },
     salt: {
@@ -63,26 +63,28 @@ userSchema.static("matchPassword", async function(email, password) {
             throw new Error("Invalid email please enter correct email");
         if (!user.isVerified)
             throw new Error("Email Not verified");
-
+        
         const secret = user.salt;
         console.log("Retrieved salt:", secret);
-
+        
         const checkPassword = createHmac("sha256", secret)
             .update(password)
             .digest("hex");
-
+        
         console.log("Stored hash:", user.password);
         console.log("Calculated hash:", checkPassword);
-
-        if (checkPassword === user.password)
-            return {...user, password: undefined, salt: undefined};
-        else
+        
+        if (checkPassword === user.password) {
+            // Return the user document directly instead of using spread
+            // This preserves the ObjectId structure
+            return user;
+        } else {
             throw new Error("Wrong Password");
+        }
     } catch (error) {
         throw error;
     }
 });
-
 const user = mongoose.model("user", userSchema);
 
 module.exports = user;
