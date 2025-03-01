@@ -14,8 +14,8 @@ const transporter = nodemailer.createTransport({
 function getSignin(req, res) {
     return res.json({signin: "please sign in"});
 }
-
-async function createUser(req, res) {
+//for Deployment
+/*async function createUser(req, res) {
     const {name, UserName, email, password} = req.body;
     
     if (!name || !UserName || !email || !password) {
@@ -62,8 +62,72 @@ async function createUser(req, res) {
         }
         return res.status(500).json({error: "Server error"});
     }
+}*/
+//for testing
+async function createUser(req, res) {
+    const {name, UserName, email, password} = req.body;
+    
+    if (!name || !UserName || !email || !password) {
+        return res.status(400).json({error: "All fields are required!"});
+    }
+    
+    try {
+        // Generate token for verification (even if we auto-verify)
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        
+        // For development: create user with isVerified set to true
+        const newUser = await user.create({
+            name,
+            UserName,
+            email,
+            password,
+            verificationToken,
+            isVerified: true // Auto-verify for development
+        });
+        
+        // For development, we can still send the verification email
+        // but it's not necessary to click it
+        const verificationLink = `http://localhost:8500/user/verify/${verificationToken}`;
+        
+        const mailOptions = {
+            from: 'mohitkarande2004@gmail.com',
+            to: email,
+            subject: 'Email Verification for InstaHang',
+            html: `
+                <h1>Welcome to InstaHang!</h1>
+                <p>Hello ${name},</p>
+                <p>Please click the link below to verify your email address:</p>
+                <a href="${verificationLink}">Verify Email</a>
+                <p>If you did not create this account, please ignore this email.</p>
+                <p>Note: For development, your account is already verified.</p>
+            `
+        };
+        
+        try {
+            await transporter.sendMail(mailOptions);
+        } catch (emailError) {
+            console.error("Email sending failed, but continuing:", emailError);
+            // Continue anyway since we're auto-verifying
+        }
+        
+        return res.status(201).json({
+            message: "User created successfully. Account is auto-verified for development.",
+            user: {
+                id: newUser._id,
+                name: newUser.name,
+                UserName: newUser.UserName,
+                email: newUser.email,
+                isVerified: newUser.isVerified
+            }
+        });
+    } catch (error) {
+        console.error("User creation error:", error);
+        if (error.code === 11000) {  
+            return res.status(400).json({error: "Email already exists"});
+        }
+        return res.status(500).json({error: "Server error: " + error.message});
+    }
 }
-
 // controllers/user.js - Updated AuthenticateUser function
 // Add this at the top of your user.js controller
 
