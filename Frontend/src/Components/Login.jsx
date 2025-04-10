@@ -20,7 +20,7 @@ function Login() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:8000/user/login", {
+      const response = await axios.post("http://localhost:8500/user/login", {
         email: formData.email,
         password: formData.password
       });
@@ -28,6 +28,8 @@ function Login() {
       if (response.status === 200) {
         // Optional: Save auth token if your backend sends one
         // localStorage.setItem('token', response.data.token);
+        localStorage.setItem("token", response.data.token); 
+        console.log("Token stored:", localStorage.getItem("token"));
         
         Store.addNotification({
           title: "Login Successful!",
@@ -44,7 +46,7 @@ function Login() {
         });
 
         setTimeout(() => {
-          navigate("/navbar");
+          navigate("/map");
         }, 1500);
       }
     } catch (error) {
@@ -91,14 +93,25 @@ function Login() {
             className="w-full p-3 mb-4 border rounded-xl focus:ring focus:ring-indigo-300"
             required
           />
-          <button 
-            type="submit"
-            disabled={isLoading}
-            className={`w-full bg-indigo-500 text-white py-3 rounded-xl font-semibold transition
-              ${isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-indigo-600'}`}
-          >
-            {isLoading ? 'Logging in...' : 'Log In'}
-          </button>
+         <button
+  type="submit"
+  disabled={isLoading}
+  className={`w-full bg-indigo-500 text-white py-3 rounded-xl font-semibold transition cursor-pointer
+    ${isLoading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-indigo-600'}`}
+>
+  {isLoading ? (
+    <span className="flex justify-center items-center">
+      <svg className="w-5 h-5 mr-2 animate-spin" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="white" strokeWidth="4"></circle>
+        <path className="opacity-75" fill="white" d="M4 12a8 8 0 018-8v8H4z"></path>
+      </svg>
+      Logging in...
+    </span>
+  ) : (
+    'Log In'
+  )}
+</button>
+
         </form>
         <p className="text-center text-sm text-gray-600 mt-4">
           Don't have an account? <Link to="/signup" className="text-indigo-500">Sign up</Link>
